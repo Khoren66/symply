@@ -1,28 +1,36 @@
-class Person{
-    constructor(name, age) {
-        this.name = name;
-        this.age = age;
-        setInterval(() => {
-            this.age+=1
-        }, 1000)
-      }    
+const fs = require('fs')
+const moment = require('moment')
+
+////example 1
+const rs = fs.createReadStream(__dirname + "/time3.txt", 'utf-8')
+const ws = fs.createWriteStream(__dirname + "/time3.txt", 'utf-8')
+
+setInterval(() => {
+    ws.write(moment(Date.now()).format("DD/MM/YYYY HH:mm:ss") + '\n')
+}, 1000)
+    rs.on('data', function (chunk) {
+    rs.pipe(ws)
+    })
+///
+
+///example 2
+setInterval(()=>{
+function copyData(write, read) {
+    fs.readFile(read, 'utf8', function (err, data) {
+            if (err) throw err;
+            fs.writeFile (write, moment(Date.now()).format("DD/MM/YYYY HH:mm:ss"), function(err) {
+                if (err) throw err;
+            });
+        });
 }
+copyData(__dirname+"/time.txt",__dirname+"/time.txt")
+},1000)
+///
 
-let max = new Person("Max",25)
-let bob = new Person("Bob",12) 
-let ray = new Person("Ray",34)  
-let sam = new Person("Sam",19) 
 
-let persons=[]
-persons.push(max,bob,ray,sam)
 
-    setInterval(() => {
-        persons.map((el,i)=>{if(el.age>=40){
-        persons.splice(i,1)}})
-        console.log(...persons)
-    }, 1000);
 
-    setInterval(() => {
-        persons.push(new Person(`${faker.name.findName()}`,Math.ceil(Math.random() * 50)))
-    }, 2000);
+
+
+
 
