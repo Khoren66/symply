@@ -27,7 +27,28 @@ copyData(__dirname+"/time.txt",__dirname+"/time.txt")
 },1000)
 ///
 
+///example 3 SEDA helped
 
+const { Readable,Transform} = require('stream'); 
+
+class Read extends Readable{
+    _read(){
+        setTimeout(() => {
+            this.push(moment().toString())
+        }, 1000);
+    }
+}
+class Formatting extends Transform{
+    _transform(chunk,encoding,callback){
+        this.push(moment(Date.now()).format("DD/MM/YYYY HH:mm:ss").toString("utf-8")+"\n")
+        callback()
+    }
+}
+
+const read = new Read()
+const format = new Formatting()
+const writeStream = fs.createWriteStream(__dirname+'/time2.txt')
+read.pipe(format).pipe(writeStream)
 
 
 
