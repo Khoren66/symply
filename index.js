@@ -1,67 +1,37 @@
 const express = require('express')
-const cookieParser=require('cookie-parser')
+const path = require('path')
 const bodyParser = require('body-parser')
-const moment = require('moment')
 const app = express();
-const formResult =[];
-const users=[]
-app.use(cookieParser());
+const todos = []
+app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
+app.engine('pug', require('pug').__express)
 
-app.get('/', setCookieTime,(req, res) => {
-    res.send(`Hello world ${req.cookies.timeStamp}`) 
+app.set('views',path.join(__dirname,'views'))
+app.set('view engine','pug');
+
+
+app.get('/',(req, res) => {
+    res.render('index.pug',{todos:todos})
 })
 
-
-app.get('/myroute/:param',(req,res)=>{
-    res.json( {
-        headers :req.headers,
-        params :req.params,
-        cookies: req.cookies
-    })
-})
-
-app.get('/form',(req,res)=>{
-    res.sendFile(__dirname + '/index.html')
-})
-
-app.post('/form',(req,res)=>{
-    formResult.push(req.body)
-    res.redirect('/result')
-    res.send("Created")
-})
-
-app.get('/result',(req,res)=>{
-    res.send(formResult)
-})
-
-app.get('/api/time',(req,res)=>{
-    res.json({
-       time: moment(Date.now()).format('DD/MM/YYYY HH:mm:ss')
-    })
-})
-
-app.post('/api/users',(req,res)=>{
-    if(typeof req.body.userName!=='string' && typeof req.body.gender!=='string' 
-    && typeof req.body.gender!=='bool' && typeof req.body.password!=='string'){
-            res.status(424).send("Data type is not correct")
-    }else{
-        users.push(req.body)
-        res.send('User created')
+app.post('/',(req, res) => {
+    if(req.body.todo!==""){
+        const newTodo ={
+            id:Date.now(),
+            todo:req.body.todo
+        }
+        todos.push(newTodo)
+        res.render('index.pug',{todos:todos})
+        res.redirect('/')
     }
 })
-
-app.get('/api/users',(req,res)=>{
-    res.json(users)
+app.delete('/:id',(req,res)=>{
+    const del = todos.filter((todo)=>todo.id!==req.params)
+    console.log(req)
+    res.render('index.pug',{todos:del})
 })
 
-
-function setCookieTime(req, res, next) {
-    if(!req.cookies.timeStamp){
-        res.cookie('timeStamp',Date.now())
-    }
-    next()
-}
 
 app.listen(3000,err=>{
     if(err){
